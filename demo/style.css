@@ -1,0 +1,9 @@
+.dropdown-menu.open{
+	display: block;
+}
+li a.highlighted{
+	background-color: grey;
+}
+body{
+	padding-left: 10px;
+}

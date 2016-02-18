@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<meta charset="UTF-8"><script src="jquery-2.2.0.min.js"></script>
+<script src="jquery.scrollintoview.min.js"></script>
+<script src="angular.min.js"></script>
+<script src="../angular-typeahead.js"></script>
+
+<script src="ui-bootstrap-tpls-1.1.2.min.js"></script>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="bootstrap.min.css">
+
+
+<body>
+
+<div ng-app="myApp" ng-controller="ExampleController">
+
+ 	<h1>Angular typeahead example</h1>
+	<h3>First dropdown</h3>
+	<div class='input-group'>
+	<angular-typeahead config="config" options="data" ng-model="selected" name="example1"></angular-typeahead>
+	</div>
+	<p>Selected (config.id): {{selected}} </p> 
+	<p>Data:</p> {{data}}
+	
+	<br><br>
+	
+	<h3>Second dropdown</h3>
+	<h6>Different name attribute is required!</h6>
+	<div class='input-group'>
+	<angular-typeahead config="config2" options="data2"" ng-model="selected2" name="example2"></angular-typeahead>
+	</div>
+	<p>Selected (config.id): {{selected2}} </p> 
+	<p>Data:</p> {{data2}}
+</div>
+
+
+<script>
+var app = angular.module('myApp', ['angularTypeaheadModule']);
+app.controller('ExampleController', function($scope) {
+    $scope.data = [
+		{
+			id: 1,
+			name: "TEST1"
+		},
+		{
+			id: 2,
+			name: "TEST2"
+		},
+		{
+			id: 3,
+			name: "EXAMPLE1"
+		},
+		{
+			id: 4,
+			name: "EXAMPLE2"
+		},
+		{
+			id: 5,
+			name: "TEST11"
+		},
+		{
+			id: 6,
+			name: "TEST21"
+		},
+		{
+			id: 7,
+			name: "EXAMPLE11"
+		},
+		{
+			id: 8,
+			name: "EXAMPLE21"
+		},
+		{
+			id: 9,
+			name: "TEST12"
+		},
+		{
+			id: 10,
+			name: "TEST22"
+		},
+		{
+			id: 11,
+			name: "EXAMPLE12"
+		},
+		{
+			id: 12,
+			name: "EXAMPLE22"
+		}
+	];
+	
+	
+	$scope.data2 = [
+		{
+			identification: 1,
+			name: "TRY1"
+		},
+		{
+			identification: 2,
+			name: "TRY2"
+		},
+		{
+			identification: 3,
+			name: "EXAMPLE1"
+		},
+		{
+			identification: 4,
+			name: "EXAMPLE2"
+		},
+		{
+			identification: 5,
+			name: "TRY11"
+		},
+		{
+			identification: 6,
+			name: "TRY21"
+		},
+		{
+			identification: 7,
+			name: "EXAMPLE11"
+		},
+		{
+			identification: 8,
+			name: "EXAMPLE21"
+		},
+		{
+			identification: 9,
+			name: "TRY32"
+		},
+		{
+			identification: 10,
+			name: "TRY43"
+		},
+		{
+			identification: 11,
+			name: "EXAMPLE12"
+		},
+		{
+			identification: 12,
+			name: "EXAMPLE22"
+		}
+	];
+	
+	$scope.config = {
+		id : 'id',
+		label: 'name'
+	}
+	$scope.config2 = {
+		id : 'identification',
+		label: 'name'
+	}
+	
+	$scope.selected = null;
+	$scope.selected2 = null;
+});
+</script>
+
+</body>
+</html>
