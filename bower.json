@@ -1,0 +1,24 @@
+{
+    "name": "angular-typeahead-egroup",
+    "description": "Yet another angular typeahead directive",
+    "private": false,
+    "dependencies": {
+        "angular": "~1.5.0",
+        "bootstrap": "latest",
+        "angular-bootstrap": "~1.2.1"
+    },
+    "main": [
+        "angular-typeahead.js",
+        "jquery.scrollintoview.min.js"
+    ],
+    "ignore": [
+        "demo",
+        ".gitignore",
+        ".editorconfig",
+        "README.md"
+    ],
+    "keywords": [
+        "angular",
+        "typeahead"
+    ]
+}
