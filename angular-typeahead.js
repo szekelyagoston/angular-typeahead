@@ -170,30 +170,34 @@ angular.module("angularTypeaheadModule", ['ui.bootstrap']).directive("angularTyp
             $scope.keyPressed = function(e){
                 switch(e.keyCode){
                     case 40: {
+                        e.preventDefault();
                         if (!$scope.dropdownOpen){
                             $scope.dropdownOpen = true;
                         }else{
-                            $scope.filtered.length === $scope.active + 1 ? $scope.active : $scope.active++;
-                            $('#' + $scope.name +''+ $scope.active).scrollintoview({
-                                duration: 10,
-                            });
-                            //document.getElementById($scope.name +''+ $scope.active).scrollIntoView(false);
+                            if($scope.active < $scope.filtered.length -1 ) {
+                                $scope.active++;
+                                $('#' + $scope.name +''+ $scope.active).scrollintoview({
+                                    duration: 10,
+                                });
+                            }
                         }
                         break;
                     }
                     case 38: {
-                            $scope.active === 0 ? $scope.active : $scope.active--;
+                        e.preventDefault();
+                        if($scope.active > 0) {
+                            $scope.active--;
                             $('#' + $scope.name +''+ $scope.active).scrollintoview({
                                 duration: 10,
                             });
-                            //document.getElementById($scope.name +''+ $scope.active).scrollIntoView(true);
+                        }
                         break;
                     }
                     case 13: {
                         e.preventDefault();
-                            if ($scope.active > -1){
-                                $scope.onSelect($scope.filtered[$scope.active]);
-                            }
+                        if ($scope.active > -1){
+                            $scope.onSelect($scope.filtered[$scope.active]);
+                        }
                         break;
                     }
                 }
