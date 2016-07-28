@@ -117,6 +117,21 @@ angular.module("angularTypeaheadModule", ['ui.bootstrap']).directive("angularTyp
                 $scope.dropdownOpen = false;
             };
 
+            var selectExactMatch = function() {
+                var pat = $scope.inlineModel.toLowerCase();
+
+                for(var i = 0; i<$scope.filtered.length; ++i) {
+                    if(pat === $scope.filtered[i][$scope.config.label].toLowerCase()) {
+                        optionSelected = true;
+                        $scope.mdl = $scope.filtered[i][$scope.config.id];
+                        $scope.active = i;
+                        return;
+                    }
+                }
+
+                $scope.mdl = null;
+            };
+
             $scope.$watch("inlineModel", function(newValue, oldValue){
                 //when options no loaded yet, we do not care about this
                 if (optionsLoaded){
@@ -136,8 +151,12 @@ angular.module("angularTypeaheadModule", ['ui.bootstrap']).directive("angularTyp
                         $scope.mdl = null;
                         $scope.dropDownFilter = angular.copy($scope.inlineModel);
                         $scope.active = -1;
+
+                        selectExactMatch();
                     }else{
                         optionSelected = false;
+
+                        selectExactMatch();
                     }
                 }
             });
