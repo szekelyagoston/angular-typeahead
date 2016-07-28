@@ -134,31 +134,37 @@ angular.module("angularTypeaheadModule", ['ui.bootstrap']).directive("angularTyp
 
             $scope.$watch("inlineModel", function(newValue, oldValue){
                 //when options no loaded yet, we do not care about this
-                if (optionsLoaded){
-                    //if we have default model, dropdown needs to be closed at startup
-                    if (defaultModelExist && startup){
-                        startup = false;
-                        //opening dropdown
-                        $scope.dropdownOpen = false;
-                    //we do not have a default model and we have at startup
-                    }else if (startup){
-                        $scope.dropdownOpen = false;
-                        startup = false;
-                    }else if (!optionSelected){
-                        //changing model to null. model can only be active when we are straight after click or after enter event
-                        $scope.dropdownOpen = true && !disableOpeningDropdown;
-                        disableOpeningDropdown = false;
-                        $scope.mdl = null;
-                        $scope.dropDownFilter = angular.copy($scope.inlineModel);
-                        $scope.active = -1;
+                if(!optionsLoaded) return;
 
-                        selectExactMatch();
-                    }else{
-                        optionSelected = false;
-
-                        selectExactMatch();
-                    }
+                //if we have default model, dropdown needs to be closed at startup
+                if (defaultModelExist && startup){
+                    startup = false;
+                    //opening dropdown
+                    $scope.dropdownOpen = false;
+                    return;
                 }
+
+                //we do not have a default model and we have at startup
+                if (startup){
+                    $scope.dropdownOpen = false;
+                    startup = false;
+                    return;
+                }
+
+                if (!optionSelected){
+                    //changing model to null. model can only be active when we are straight after click or after enter event
+                    $scope.dropdownOpen = true && !disableOpeningDropdown;
+                    disableOpeningDropdown = false;
+                    $scope.mdl = null;
+                    $scope.dropDownFilter = angular.copy($scope.inlineModel);
+                    $scope.active = -1;
+
+                    selectExactMatch();
+                    return;
+                }
+
+                optionSelected = false;
+                selectExactMatch();
             });
 
             $scope.keyPressed = function(e){
