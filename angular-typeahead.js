@@ -40,6 +40,10 @@ angular.module("angularTypeaheadModule", ['ui.bootstrap']).directive("angularTyp
                 };
             }
 
+            var getId = function(e) {
+                return e[$scope.config.id];
+            };
+
             //setting this true can disable the default dropdown opeing mechanism. Must be set back to false after used
             var disableOpeningDropdown = false;
             //options can be loaded via promise this way.
@@ -79,6 +83,14 @@ angular.module("angularTypeaheadModule", ['ui.bootstrap']).directive("angularTyp
                 }
             });
 
+            $scope.$watch("active", function(newValue, oldValue) {
+                if(newValue < 0) return;
+
+                $('#' + $scope.name +''+ $scope.active).scrollintoview({
+                    duration: 10
+                });
+            });
+
             var closedOnBlur = false;
             $scope.onBlur = function(){
                 $scope.dropdownOpen = false;
@@ -100,13 +112,8 @@ angular.module("angularTypeaheadModule", ['ui.bootstrap']).directive("angularTyp
                     $scope.dropdownOpen = true;
 
                     //if we have a valid selection, we should set the focus there
-                    if ($scope.mdl !== null){
-                        for (var i = 0; i < $scope.filtered.length; ++i){
-                            if ($scope.filtered[i][$scope.config.id] === $scope.mdl){
-                                //found the active one, setting highlighting
-                                $scope.active = i;
-                            }
-                        }
+                    if ($scope.mdl !== null) {
+                        $scope.active = $scope.filtered.map(getId).indexOf($scope.mdl);
                     }
                 }
             };
@@ -117,11 +124,6 @@ angular.module("angularTypeaheadModule", ['ui.bootstrap']).directive("angularTyp
                 $scope.mdl = option[$scope.config.id];
                 $scope.inlineModel = option[$scope.config.label];
                 $scope.dropdownOpen = false;
-            };
-
-
-            var getId = function(e) {
-                return e[$scope.config.id];
             };
 
             var selectExactMatch = function() {
@@ -198,9 +200,6 @@ angular.module("angularTypeaheadModule", ['ui.bootstrap']).directive("angularTyp
                         }else{
                             if($scope.active < $scope.filtered.length -1 ) {
                                 $scope.active++;
-                                $('#' + $scope.name +''+ $scope.active).scrollintoview({
-                                    duration: 10,
-                                });
                             }
                         }
                         break;
@@ -209,9 +208,6 @@ angular.module("angularTypeaheadModule", ['ui.bootstrap']).directive("angularTyp
                         e.preventDefault();
                         if($scope.active > 0) {
                             $scope.active--;
-                            $('#' + $scope.name +''+ $scope.active).scrollintoview({
-                                duration: 10,
-                            });
                         }
                         break;
                     }
