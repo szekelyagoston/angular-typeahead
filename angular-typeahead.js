@@ -13,7 +13,7 @@ angular.module("angularTypeaheadModule", ['ui.bootstrap']).directive("angularTyp
                         "</span>"+
                     "</div>"+
                     "<ul id=\"{{name + 'Dropdown'}}\" class=dropdown-menu role=menu style=max-height:200px;overflow-y:auto ng-class=\"{open : dropdownOpen, closed: !dropdownOpen }\">"+
-                        "<li ng-repeat=\"op in filtered = (options | filter: filterBy)\" id=\"{{name + $index}}\" >"+
+                        "<li ng-repeat=\"op in filtered\" id=\"{{name + $index}}\" >"+
                             "<a href ng-click=\"onSelect(op, $event)\" ng-class=\"{highlighted : active===$index}\">{{op[config.label]}}</a>"+
                         "</li>"+
                     "</ul>"+
@@ -30,6 +30,7 @@ angular.module("angularTypeaheadModule", ['ui.bootstrap']).directive("angularTyp
         controller: function($scope) {
             //dropdown is closed and no active element is shown at the moment
             $scope.dropdownOpen = false;
+            $scope.filtered = angular.copy($scope.options);
             $scope.active=-1;
             //if config object is not defined, we create a default one
             if (!angular.isDefined($scope.config)) {
@@ -39,6 +40,10 @@ angular.module("angularTypeaheadModule", ['ui.bootstrap']).directive("angularTyp
                 };
             }
 
+            var getId = function(e) {
+                return e[$scope.config.id];
+            };
+
             //setting this true can disable the default dropdown opeing mechanism. Must be set back to false after used
             var disableOpeningDropdown = false;
             //options can be loaded via promise this way.
@@ -47,6 +52,7 @@ angular.module("angularTypeaheadModule", ['ui.bootstrap']).directive("angularTyp
             var defaultModelExist = $scope.mdl !== null && angular.isDefined($scope.mdl);
             var startup = true;
             $scope.dropDownFilter = "";
+
 
             //options changing
             $scope.$watch("options", function(n, o){
@@ -77,6 +83,14 @@ angular.module("angularTypeaheadModule", ['ui.bootstrap']).directive("angularTyp
                 }
             });
 
+            $scope.$watch("active", function(newValue, oldValue) {
+                if(newValue < 0) return;
+
+                $('#' + $scope.name +''+ $scope.active).scrollintoview({
+                    duration: 10
+                });
+            });
+
             var closedOnBlur = false;
             $scope.onBlur = function(){
                 $scope.dropdownOpen = false;
@@ -98,13 +112,8 @@ angular.module("angularTypeaheadModule", ['ui.bootstrap']).directive("angularTyp
                     $scope.dropdownOpen = true;
 
                     //if we have a valid selection, we should set the focus there
-                    if ($scope.mdl !== null){
-                        for (var i = 0; i < $scope.filtered.length; ++i){
-                            if ($scope.filtered[i][$scope.config.id] === $scope.mdl){
-                                //found the active one, setting highlighting
-                                $scope.active = i;
-                            }
-                        }
+                    if ($scope.mdl !== null) {
+                        $scope.active = $scope.filtered.map(getId).indexOf($scope.mdl);
                     }
                 }
             };
@@ -117,66 +126,99 @@ angular.module("angularTypeaheadModule", ['ui.bootstrap']).directive("angularTyp
                 $scope.dropdownOpen = false;
             };
 
-            $scope.$watch("inlineModel", function(newValue, oldValue){
-                //when options no loaded yet, we do not care about this
-                if (optionsLoaded){
-                    //if we have default model, dropdown needs to be closed at startup
-                    if (defaultModelExist && startup){
-                        startup = false;
-                        //opening dropdown
-                        $scope.dropdownOpen = false;
-                    //we do not have a default model and we have at startup
-                    }else if (startup){
-                        $scope.dropdownOpen = false;
-                        startup = false;
-                    }else if (!optionSelected){
-                        //changing model to null. model can only be active when we are straight after click or after enter event
-                        $scope.dropdownOpen = true && !disableOpeningDropdown;
-                        disableOpeningDropdown = false;
-                        $scope.mdl = null;
-                        $scope.dropDownFilter = angular.copy($scope.inlineModel);
-                        $scope.active = -1;
-                    }else{
-                        optionSelected = false;
+            var selectExactMatch = function() {
+                var pat = $scope.inlineModel.toLowerCase();
+
+                for(var i = 0; i<$scope.options.length; ++i) {
+                    if(pat === $scope.options[i][$scope.config.label].toLowerCase()) {
+                        optionSelected = true;
+                        $scope.mdl = $scope.options[i][$scope.config.id];
+                        $scope.active = $scope.filtered.map(getId).indexOf($scope.mdl);
+                        return;
                     }
                 }
+
+                $scope.mdl = null;
+                $scope.active = -1;
+            };
+
+            var filterOptions = function(val) {
+                if(!angular.isDefined(val) || val === "") {
+                    $scope.filtered = $scope.options;
+                    return;
+                }
+
+                var fil = val.toLowerCase();
+                $scope.filtered = _.filter($scope.options, function(value) {
+                    return (value[$scope.config.label].toLowerCase().indexOf(fil)) != -1;
+                });
+            };
+
+            $scope.$watch("inlineModel", function(newValue, oldValue){
+                //when options no loaded yet, we do not care about this
+                if(!optionsLoaded) return;
+
+                filterOptions(newValue);
+
+                //if we have default model, dropdown needs to be closed at startup
+                if (defaultModelExist && startup){
+                    startup = false;
+                    //opening dropdown
+                    $scope.dropdownOpen = false;
+                    return;
+                }
+
+                //we do not have a default model and we have at startup
+                if (startup){
+                    $scope.dropdownOpen = false;
+                    startup = false;
+                    return;
+                }
+
+                if (!optionSelected){
+                    //changing model to null. model can only be active when we are straight after click or after enter event
+                    $scope.dropdownOpen = true && !disableOpeningDropdown;
+                    disableOpeningDropdown = false;
+                    $scope.mdl = null;
+                    $scope.inlineModel = $scope.inlineModel;
+                    $scope.active = -1;
+
+                    selectExactMatch();
+                    return;
+                }
+
+                optionSelected = false;
+                selectExactMatch();
             });
 
             $scope.keyPressed = function(e){
                 switch(e.keyCode){
                     case 40: {
+                        e.preventDefault();
                         if (!$scope.dropdownOpen){
                             $scope.dropdownOpen = true;
                         }else{
-                            $scope.filtered.length === $scope.active + 1 ? $scope.active : $scope.active++;
-                            $('#' + $scope.name +''+ $scope.active).scrollintoview({
-                                duration: 10,
-                            });
-                            //document.getElementById($scope.name +''+ $scope.active).scrollIntoView(false);
+                            if($scope.active < $scope.filtered.length -1 ) {
+                                $scope.active++;
+                            }
                         }
                         break;
                     }
                     case 38: {
-                            $scope.active === 0 ? $scope.active : $scope.active--;
-                            $('#' + $scope.name +''+ $scope.active).scrollintoview({
-                                duration: 10,
-                            });
-                            //document.getElementById($scope.name +''+ $scope.active).scrollIntoView(true);
+                        e.preventDefault();
+                        if($scope.active > 0) {
+                            $scope.active--;
+                        }
                         break;
                     }
                     case 13: {
                         e.preventDefault();
-                            if ($scope.active > -1){
-                                $scope.onSelect($scope.filtered[$scope.active]);
-                            }
+                        if ($scope.active > -1){
+                            $scope.onSelect($scope.filtered[$scope.active]);
+                        }
                         break;
                     }
                 }
-            };
-
-            $scope.filterBy = function(item) {
-                if (!angular.isDefined($scope.dropDownFilter)) return true;
-                return (item[$scope.config.label].toLowerCase().indexOf($scope.dropDownFilter.toLowerCase())) != -1;
             };
 
             $(document).ready(function() {
